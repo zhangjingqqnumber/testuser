@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正弦波可视化</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            text-align: center;
+            color: white;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        
+        canvas {
+            border: 2px solid #4a9eff;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 20px rgba(74, 158, 255, 0.3);
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        label {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        input[type="range"] {
+            width: 150px;
+            cursor: pointer;
+        }
+        
+        .value-display {
+            font-size: 0.8em;
+            color: #4a9eff;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌊 正弦波可视化</h1>
+        <canvas id="sineCanvas" width="800" height="400"></canvas>
+        <div class="controls">
+            <div class="control-group">
+                <label for="frequency">频率 (Frequency)</label>
+                <input type="range" id="frequency" min="1" max="20" value="5">
+                <div class="value-display" id="freqValue">5</div>
+            </div>
+            <div class="control-group">
+                <label for="amplitude">振幅 (Amplitude)</label>
+                <input type="range" id="amplitude" min="10" max="150" value="100">
+                <div class="value-display" id="ampValue">100</div>
+            </div>
+            <div class="control-group">
+                <label for="speed">速度 (Speed)</label>
+                <input type="range" id="speed" min="0" max="10" value="2">
+                <div class="value-display" id="speedValue">2</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sineCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 控制参数
+        let frequency = 5;
+        let amplitude = 100;
+        let speed = 2;
+        let phase = 0;
+        
+        // 获取 DOM 元素
+        const freqSlider = document.getElementById('frequency');
+        const ampSlider = document.getElementById('amplitude');
+        const speedSlider = document.getElementById('speed');
+        const freqValue = document.getElementById('freqValue');
+        const ampValue = document.getElementById('ampValue');
+        const speedValue = document.getElementById('speedValue');
+        
+        // 更新显示值
+        function updateDisplayValues() {
+            freqValue.textContent = frequency;
+            ampValue.textContent = amplitude;
+            speedValue.textContent = speed;
+        }
+        
+        // 监听滑块变化
+        freqSlider.addEventListener('input', (e) => {
+            frequency = parseInt(e.target.value);
+            updateDisplayValues();
+        });
+        
+        ampSlider.addEventListener('input', (e) => {
+            amplitude = parseInt(e.target.value);
+            updateDisplayValues();
+        });
+        
+        speedSlider.addEventListener('input', (e) => {
+            speed = parseInt(e.target.value);
+            updateDisplayValues();
+        });
+        
+        // 绘制正弦波
+        function drawSineWave() {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerY = canvas.height / 2;
+            
+            // 绘制中心线
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(74, 158, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 绘制正弦波
+            ctx.beginPath();
+            ctx.strokeStyle = '#4a9eff';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            for (let x = 0; x < canvas.width; x++) {
+                // 正弦波公式: y = A * sin(2π * f * x / width + phase)
+                const angle = (2 * Math.PI * frequency * x) / canvas.width + phase;
+                const y = centerY + amplitude * Math.sin(angle);
+                
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // 绘制发光效果
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#4a9eff';
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            
+            // 更新相位以产生动画效果
+            phase += speed * 0.05;
+            
+            // 请求下一帧
+            requestAnimationFrame(drawSineWave);
+        }
+        
+        // 开始动画
+        updateDisplayValues();
+        drawSineWave();
+    </script>
+</body>
+</html>
